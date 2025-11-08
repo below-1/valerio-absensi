@@ -53,6 +53,8 @@ export function RekapanActions({ category, dayFilter, monthFilter }: RekapanActi
             const d = format(date, 'yyyy-MM-dd');
             router.replace(`/main/rekapan?category=harian&dayFilter=${d}`)
           } else if (r == 'bulanan') {
+            const d = format(date, 'yyyy-MM');
+            router.replace(`/main/rekapan?category=bulanan&monthFilter=${d}`)
           }
           setRekapanView(r)
         }}
@@ -92,7 +94,16 @@ export function RekapanActions({ category, dayFilter, monthFilter }: RekapanActi
       ) : (
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">Pilih Bulan</span>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+          <Select 
+            value={selectedMonth} 
+            onValueChange={s => {
+              const ss = s.padStart(2, "0")
+              const y = format(date, 'yyyy');
+              const monthFilter = `${y}-${ss}`;
+              router.push(`/main/rekapan?category=bulanan&monthFilter=${monthFilter}`)
+              setSelectedMonth(s)
+            }}
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Pilih bulan" />
             </SelectTrigger>
@@ -106,11 +117,6 @@ export function RekapanActions({ category, dayFilter, monthFilter }: RekapanActi
           </Select>
         </div>
       )}
-
-      <Button color="primary">
-        <SearchIcon className="h-4 w-4" />
-        Cari
-      </Button>
     </>
   )
 }

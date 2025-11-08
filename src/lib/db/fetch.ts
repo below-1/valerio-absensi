@@ -40,3 +40,83 @@ export async function fetchRekapanAbsenByDay(dayFilter: string) {
     .orderBy(pegawai.nama, absensi.tanggal);
   return results;
 }
+
+export async function fetchRekapanAbsenByMonth(monthFilter: string) {
+  const results = await db
+    .select({
+      pegawaiId: pegawai.id,
+      nip: pegawai.nip,
+      namaPegawai: pegawai.nama,
+      totalHari: sql<number>`COUNT(${absensi.id})`,
+
+      // 🕒 Total "In" score
+      totalInScore: sql<number>`
+        SUM(
+          CASE
+            WHEN ${absensi.statusMasuk} = 'alfa' THEN -5
+            WHEN ${absensi.jamMasuk} <= 450 THEN 5
+            WHEN ${absensi.jamMasuk} BETWEEN 451 AND 480 THEN 3
+            WHEN ${absensi.jamMasuk} BETWEEN 481 AND 510 THEN 2
+            WHEN ${absensi.jamMasuk} > 510 THEN 1
+            ELSE 0
+          END
+        )
+      `.as("total_in_score"),
+
+      rataRataIn: sql<number>`
+        ROUND(AVG(
+          CASE
+            WHEN ${absensi.statusMasuk} = 'alfa' THEN -5
+            WHEN ${absensi.jamMasuk} <= 450 THEN 5
+            WHEN ${absensi.jamMasuk} BETWEEN 451 AND 480 THEN 3
+            WHEN ${absensi.jamMasuk} BETWEEN 481 AND 510 THEN 2
+            WHEN ${absensi.jamMasuk} > 510 THEN 1
+            ELSE 0
+          END
+        ), 2)
+      `.as("rata_rata_in"),
+
+      // 🕔 Total "Out" score
+      totalOutScore: sql<number>`
+        SUM(
+          CASE
+            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND ${absensi.jamKeluar} >= 960 THEN 1
+            WHEN ${absensi.weekday} = 5 AND ${absensi.jamKeluar} >= 990 THEN 1
+            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 510 THEN 1
+            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 540 THEN 1
+            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 510 THEN -2
+            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 540 THEN -2
+            ELSE 0
+          END
+        )
+      `.as("total_out_score"),
+
+      rataRataOut: sql<number>`
+        ROUND(AVG(
+          CASE
+            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND ${absensi.jamKeluar} >= 960 THEN 1
+            WHEN ${absensi.weekday} = 5 AND ${absensi.jamKeluar} >= 990 THEN 1
+            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 510 THEN 1
+            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 540 THEN 1
+            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 510 THEN -2
+            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 540 THEN -2
+            ELSE 0
+          END
+        ), 2)
+      `.as("rata_rata_out"),
+    })
+    .from(pegawai)
+    .leftJoin(
+      absensi,
+      sql`${absensi.pegawaiId} = ${pegawai.id} AND strftime('%Y-%m', ${absensi.tanggal}) = ${monthFilter}`
+    )
+    .groupBy(pegawai.id, pegawai.nip, pegawai.nama)
+    .orderBy(pegawai.nama);
+  const mapped = results.map(r => {
+    return {
+      ...r,
+      totalScore: (r.totalInScore + r.totalOutScore)
+    }
+  })
+  return mapped;
+}

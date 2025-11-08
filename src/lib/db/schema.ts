@@ -34,6 +34,9 @@ export const absensi = sqliteTable("absensi", {
   pegawaiId: integer("pegawai_id")
     .notNull()
     .references(() => pegawai.id, { onDelete: "cascade" }),
+  
+  // Store weekday as integer start from 1
+  weekday: integer("weekday").notNull().default(1),
 
   tanggal: text("tanggal").notNull(), // store date as ISO string (YYYY-MM-DD)
   jamMasuk: integer("jam_masuk"), // minutes since midnight

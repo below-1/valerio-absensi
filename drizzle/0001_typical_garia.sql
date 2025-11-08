@@ -1,0 +1,1 @@
+ALTER TABLE `absensi` ADD `weekday` integer DEFAULT 1 NOT NULL;

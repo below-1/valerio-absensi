@@ -5,8 +5,9 @@ import { db } from "@/lib/db";
 import { pegawai } from "@/lib/db/schema";
 import { PlusCircle } from "lucide-react";
 import { RekapanActions } from "./rekapan-actions";
-import { fetchRekapanAbsenByDay } from "@/lib/db/fetch";
+import { fetchRekapanAbsenByDay, fetchRekapanAbsenByMonth } from "@/lib/db/fetch";
 import RekapanTablePerDay from "./rekapan-table-per-day";
+import RekapanTablePerMonth from "./rekapan-table-per-month";
 
 type SearchParams = { 
   category?: string;
@@ -22,10 +23,8 @@ export default async function ListPegawaiPage({
   const sp = await searchParams;
   const { dayFilter, monthFilter } = sp;
   const category = sp.category ? sp.category : 'harian';
-
-  const absensiList = dayFilter 
-    ? await fetchRekapanAbsenByDay(dayFilter)
-    : await fetchRekapanAbsenByDay('2025=11-06');
+  const harianItems = category == 'harian' && dayFilter ? await fetchRekapanAbsenByDay(dayFilter) : [];
+  const monthItems = category == 'bulanan' && monthFilter ? await fetchRekapanAbsenByMonth(monthFilter) : [];
 
   return (
     <div>
@@ -38,9 +37,11 @@ export default async function ListPegawaiPage({
           />
         }
       />
-      <RekapanTablePerDay
-        results={absensiList}
-      />
+      {
+        category === 'harian' 
+          ?  <RekapanTablePerDay results={harianItems} />
+          : <RekapanTablePerMonth data={monthItems} />
+      }
     </div>
   )
 }
