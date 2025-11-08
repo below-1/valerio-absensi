@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
+import { id } from "date-fns/locale";
 
 // Enum values (for clarity and reuse)
 export const statusMasukEnum = ['tepat_waktu', 'telat', 'alfa'] as const;
@@ -58,3 +59,21 @@ export const absensiRelations = relations(absensi, ({ one }) => ({
 
 export type AbsensiInsertType = typeof absensi.$inferInsert;
 export type AbsensiSelectType = typeof absensi.$inferSelect;
+
+type AbsensiItem = {
+  pegawai: {
+    id: number;
+    nip: string;
+    nama: string;
+  },
+  absensi?: {
+    id: number;
+    tanggal: string;
+    jamMasuk?: number;
+    jamKeluar?: number;
+    statusMasuk: StatusMasuk;
+    statusKeluar?: StatusKeluar;
+    suratDispensasi?: string;
+    pengumpulanSuratDispensasi?: string;
+  }
+}
