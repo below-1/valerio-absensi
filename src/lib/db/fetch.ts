@@ -1,6 +1,7 @@
 import { asc, sql } from "drizzle-orm";
 import { db } from "../db";
 import { absensi, pegawai } from "./schema";
+import { splitDateString } from "../utils";
 
 export async function fetchPegawaiOptions() {
   const pegawaiOptions = await db.select({
@@ -11,7 +12,8 @@ export async function fetchPegawaiOptions() {
 }
 
 
-export async function fetchRekapanAbsenByDay(year: number, month: number, day: number) {
+export async function fetchRekapanAbsenByDay(dayFilter: string) {
+  const [ year, month, day ] = splitDateString(dayFilter);
   const monthStr = String(month).padStart(2, "0");
   const dayStr = String(day).padStart(2, "0");
   const prefix = `${year}-${monthStr}-${dayStr}`;

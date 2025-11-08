@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from "next/navigation"
 import { RekapanViewSelect } from "@/components/rekapan-view-select";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { CalendarIcon, PlusCircle, SearchIcon } from "lucide-react";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { id } from "date-fns/locale";
 
 const months = [
@@ -26,16 +27,35 @@ const months = [
   { value: "12", label: "Desember" },
 ];
 
-export function RekapanActions() {
-  const [rekapanView, setRekapanView] = useState<"bulanan" | "harian">("bulanan");
-  const [date, setDate] = useState<Date>(new Date());
+type RekapanActionsProps = {
+  category: 'harian' | 'bulanan';
+  dayFilter?: string;
+  monthFilter?: string;
+}
+
+function parseYYY_MM_DD(s: string) {
+  const date = parse(s, 'yyyy-MM-dd', new Date());
+  return date;
+}
+
+export function RekapanActions({ category, dayFilter, monthFilter }: RekapanActionsProps) {
+  const router = useRouter()
+  const [rekapanView, setRekapanView] = useState<"bulanan" | "harian">(category);
+  const [date, setDate] = useState<Date>(dayFilter ? parseYYY_MM_DD(dayFilter) : new Date());
   const [selectedMonth, setSelectedMonth] = useState(String(new Date().getMonth() + 1));
 
   return (
     <>
       <RekapanViewSelect
         value={rekapanView}
-        onChange={setRekapanView}
+        onChange={r => {
+          if (r == 'harian') {
+            const d = format(date, 'yyyy-MM-dd');
+            router.replace(`/main/rekapan?category=harian&dayFilter=${d}`)
+          } else if (r == 'bulanan') {
+          }
+          setRekapanView(r)
+        }}
       />
       
       {rekapanView === "harian" ? (
@@ -58,7 +78,13 @@ export function RekapanActions() {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(date) => date && setDate(date)}
+                onSelect={(date) => {
+                  date && setDate(date)
+                  if (date) {
+                    const d = format(date, 'yyyy-MM-dd');
+                    router.push(`/main/rekapan?category=harian&dayFilter=${d}`)
+                  }
+                }}
               />
             </PopoverContent>
           </Popover>

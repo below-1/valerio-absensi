@@ -8,15 +8,34 @@ import { RekapanActions } from "./rekapan-actions";
 import { fetchRekapanAbsenByDay } from "@/lib/db/fetch";
 import RekapanTablePerDay from "./rekapan-table-per-day";
 
-export default async function ListPegawaiPage() {
-  const absensiList = await fetchRekapanAbsenByDay(2025, 11, 6)
+type SearchParams = { 
+  category?: string;
+  dayFilter?: string;
+  monthFilter?: string;
+};
+
+export default async function ListPegawaiPage({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const sp = await searchParams;
+  const { dayFilter, monthFilter } = sp;
+  const category = sp.category ? sp.category : 'harian';
+
+  const absensiList = dayFilter 
+    ? await fetchRekapanAbsenByDay(dayFilter)
+    : await fetchRekapanAbsenByDay('2025=11-06');
+
   return (
     <div>
       <PageHeader
         title="Rekapan Absen"
         description="Lihat dan unduh rekapan absen di sini."
         actions={
-          <RekapanActions />
+          <RekapanActions
+            category={category as any}
+          />
         }
       />
       <RekapanTablePerDay
@@ -25,3 +44,4 @@ export default async function ListPegawaiPage() {
     </div>
   )
 }
+
