@@ -5,8 +5,11 @@ import { db } from "@/lib/db";
 import { pegawai } from "@/lib/db/schema";
 import { PlusCircle } from "lucide-react";
 import { RekapanActions } from "./rekapan-actions";
+import { fetchRekapanAbsenByDay } from "@/lib/db/fetch";
+import RekapanTablePerDay from "./rekapan-table-per-day";
 
 export default async function ListPegawaiPage() {
+  const absensiList = await fetchRekapanAbsenByDay(2025, 11, 6)
   return (
     <div>
       <PageHeader
@@ -15,6 +18,9 @@ export default async function ListPegawaiPage() {
         actions={
           <RekapanActions />
         }
+      />
+      <RekapanTablePerDay
+        results={absensiList}
       />
     </div>
   )

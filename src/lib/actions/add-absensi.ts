@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db"; // your drizzle db instance
 import { absensi, AbsensiInsertType, StatusKeluar, statusKeluarEnum, StatusMasuk, statusMasukEnum } from "@/lib/db/schema";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const absensiSchema = z.object({
@@ -44,6 +45,8 @@ export async function addAbsensi(formData: FormData) {
   } satisfies AbsensiInsertType;
 
   await db.insert(absensi).values(val);
+
+  revalidatePath('/main/rekapan')
 
   console.log("✅ Absensi added successfully");
 }
