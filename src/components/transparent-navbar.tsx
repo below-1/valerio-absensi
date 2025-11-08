@@ -4,8 +4,16 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LayoutDashboard, CalendarCheck, User, Users } from "lucide-react"
+import { AddAbsensiModal } from "./add-rekap-modal"
 
-const Navbar: FC = () => {
+type Props = {
+  pegawaiOptions: {
+    id: number;
+    nama: string;
+  }[];
+}
+
+const Navbar = ({ pegawaiOptions }: Props) => {
   return (
     <nav className="w-full bg-white border-b shadow-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -29,6 +37,9 @@ const Navbar: FC = () => {
             <CalendarCheck className="h-4 w-4 mr-1" />
             Rekapan Absen
           </Link>
+          <AddAbsensiModal 
+            pegawaiOptions={pegawaiOptions} 
+          />
           {/* Right Side - User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

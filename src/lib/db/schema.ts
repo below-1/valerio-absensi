@@ -5,6 +5,9 @@ import { relations, sql } from "drizzle-orm";
 export const statusMasukEnum = ['tepat_waktu', 'telat', 'alfa'] as const;
 export const statusKeluarEnum = ['tepat_waktu', 'terlalu_cepat'] as const;
 
+export type StatusMasuk = typeof statusMasukEnum[number];
+export type StatusKeluar = typeof statusKeluarEnum[number];
+
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
@@ -52,3 +55,6 @@ export const absensiRelations = relations(absensi, ({ one }) => ({
     references: [pegawai.id],
   }),
 }));
+
+export type AbsensiInsertType = typeof absensi.$inferInsert;
+export type AbsensiSelectType = typeof absensi.$inferSelect;

@@ -1,5 +1,8 @@
+'use server';
+
 import { FC, ReactNode } from "react"
 import Navbar from "@/components/transparent-navbar"
+import { fetchPegawaiOptions } from "@/lib/db/fetch";
 
 const Footer: FC = () => (
   <footer className="w-full bg-white border-t shadow-sm py-3 text-center text-sm text-gray-500">
@@ -11,12 +14,13 @@ interface LayoutProps {
   children: ReactNode
 }
 
-const Layout: FC<LayoutProps> = ({ children }) => {
+export default async function MainLayout({ children }: { children: ReactNode }) {
+  const pegawaiOptions = await fetchPegawaiOptions()
   return (
     <div className="flex flex-col min-h-screen">
       {/* Fixed Navbar */}
       <div className="fixed top-0 left-0 right-0 z-50">
-        <Navbar />
+        <Navbar pegawaiOptions={pegawaiOptions} />
       </div>
 
       {/* Main Content */}
@@ -34,5 +38,3 @@ const Layout: FC<LayoutProps> = ({ children }) => {
     </div>
   )
 }
-
-export default Layout
