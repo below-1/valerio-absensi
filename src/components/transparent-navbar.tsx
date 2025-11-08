@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LayoutDashboard, CalendarCheck, User } from "lucide-react"
+import { LayoutDashboard, CalendarCheck, User, Users } from "lucide-react"
 
 const Navbar: FC = () => {
   return (
@@ -21,11 +21,11 @@ const Navbar: FC = () => {
 
         {/* Center - Navigation Links */}
         <div className="flex items-center space-x-6">
-          <Link href="/dashboard" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors">
-            <LayoutDashboard className="h-4 w-4 mr-1" />
-            Dashboard
+          <Link href="/main/pegawai/list" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+            <Users className="h-4 w-4 mr-1" />
+            Pegawai
           </Link>
-          <Link href="/rekapan" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+          <Link href="/main/rekapan" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors">
             <CalendarCheck className="h-4 w-4 mr-1" />
             Rekapan Absen
           </Link>

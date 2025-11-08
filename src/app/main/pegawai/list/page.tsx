@@ -10,8 +10,8 @@ export default async function ListPegawaiPage() {
   return (
     <div>
       <PageHeader
-        title="Rekapan Absen"
-        description="Lihat dan unduh data absensi karyawan di sini."
+        title="Data Pegawai"
+        description="Lihat dan unduh data pegawai di sini."
         actions={
           <>
             <Button variant="outline">Export</Button>
