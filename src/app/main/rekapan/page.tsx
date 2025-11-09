@@ -27,7 +27,6 @@ export default async function ListPegawaiPage({
   const category = sp.category ? sp.category : 'harian';
   const dayFilter = category == 'harian' && !df ? format(new Date(), 'yyyy-MM-dd') : df;
   const monthFilter = category == 'bulanan' && !mf ? format(new Date(), 'yyyy-MM') : mf;
-  console.log("monthFilter", monthFilter);
 
   const harianItems = category == 'harian' && dayFilter ? await fetchRekapanAbsenByDay(dayFilter) : [];
   const monthItems = category == 'bulanan' && monthFilter ? await fetchRekapanAbsenByMonth(monthFilter) : [];
@@ -47,7 +46,7 @@ export default async function ListPegawaiPage({
       />
       {
         category === 'harian' 
-          ?  <RekapanTablePerDay pegawaiOptions={pegawaiOptions} results={harianItems} />
+          ?  <RekapanTablePerDay pegawaiOptions={pegawaiOptions} results={harianItems as any[]} />
           : <RekapanTablePerMonth data={monthItems} />
       }
     </div>

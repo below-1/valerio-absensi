@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Edit, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface Pegawai {
   id: number
@@ -39,6 +40,7 @@ const PegawaiTable: FC<PegawaiTableProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const router = useRouter()
   if (isLoading) {
     return (
       <div className="flex justify-center py-8 text-sm text-muted-foreground">
@@ -83,11 +85,13 @@ const PegawaiTable: FC<PegawaiTableProps> = ({
                     <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => onEdit?.(pegawai)}
+                      onClick={() => {
+                        router.push(`/main/pegawai/detail/${pegawai.id}`)
+                      }}
                       className="flex items-center gap-2"
                     >
                       <Edit className="h-4 w-4" />
-                      Edit
+                      Detail
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => onDelete?.(pegawai)}

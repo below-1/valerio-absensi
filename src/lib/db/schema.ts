@@ -26,6 +26,7 @@ export const pegawai = sqliteTable("pegawai", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   nip: text("nip").notNull().unique(),
   nama: text("nama").notNull(),
+  status: text("status")
 });
 
 export const absensi = sqliteTable("absensi", {

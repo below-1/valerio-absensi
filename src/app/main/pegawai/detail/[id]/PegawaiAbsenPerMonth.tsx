@@ -16,10 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
-import { DeleteModal } from "./delete-modal";
 import { EditAbsensiModal } from "@/components/edit-absensi-modal";
 import { AbsensiFormData } from "@/components/add-rekap-modal";
-import Link from "next/link";
+import { DeleteModal } from "../../../rekapan/delete-modal";
 
 // Types
 type StatusMasuk = "tepat_waktu" | "telat" | "alfa" | null;
@@ -71,11 +70,10 @@ const statusBadge = (s: StatusMasuk | StatusKeluar | null) => {
 
 type Props = {
   results: Row[];
-  pegawaiOptions: { id: number; nama: string }[];
 }
 
 // Component
-export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
+export default function PegawaiAbsenPerMonth({ results }: Props) {
   const [query, setQuery] = useState("");
 
   const filtered = results.filter((r) => {
@@ -105,19 +103,6 @@ export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
 
   return (
     <>
-      {passedData && <EditAbsensiModal
-        absensiData={passedData}
-        open={editOpen}
-        setOpen={setEditOpen}
-        pegawaiOptions={pegawaiOptions}
-      />}
-      
-
-      <DeleteModal
-        id={selectedAbsensi?.absensiId ?? 0}
-        open={deleteOpen}
-        setOpen={setDeleteOpen}
-      />      
 
       <Card className="w-full">
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -125,30 +110,12 @@ export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
             <CardTitle>Daftar Pegawai & Absensi</CardTitle>
             <p className="text-sm text-muted-foreground">Data absensi pegawai (tanpa grouping)</p>
           </div>
-
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Cari nama atau NIP..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-[260px]"
-            />
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setQuery("");
-              }}
-            >
-              Reset
-            </Button>
-          </div>
         </CardHeader>
 
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Pegawai</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Masuk</TableHead>
                 <TableHead>Keluar</TableHead>
@@ -170,12 +137,6 @@ export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
               ) : (
                 filtered.map((r) => (
                   <TableRow key={r.absensiId ?? `pegawai-${r.pegawaiId}`}>
-                    <TableCell>
-                      <Link href={`/main/pegawai/detail/${r.pegawaiId}`} className="flex flex-col">
-                        <span className="font-medium">{r.nama}</span>
-                        <span className="text-sm text-muted-foreground">NIP: {r.nip}</span>
-                      </Link>
-                    </TableCell>
                     <TableCell>{r.tanggal ?? "-"}</TableCell>
                     <TableCell>{minutesToHHMM(r.jamMasuk)}</TableCell>
                     <TableCell>{minutesToHHMM(r.jamKeluar)}</TableCell>
@@ -184,35 +145,6 @@ export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
                     <TableCell>{r.suratDispensasi ?? "-"}</TableCell>
                     <TableCell>{r.scoreMasuk}</TableCell>
                     <TableCell>{r.scoreKeluar}</TableCell>
-                    <TableCell>
-                      {!!(r.absensiId) && (  
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => {
-                                setSelectedAbsensi(r);
-                                setEditOpen(true);
-                              }}>
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => {
-                                setSelectedAbsensi(r);
-                                setDeleteOpen(true);
-                              }}>
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </TableCell>
                   </TableRow>
                 ))
               )}

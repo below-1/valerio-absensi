@@ -3,6 +3,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { ja } from "date-fns/locale";
 import { StatusKeluar, StatusMasuk } from "./db/schema";
+import { parse } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -236,4 +237,49 @@ export function calculateStatusKeluar(presensiKeluar: PresensiType, scoreKeluar:
   if (scoreKeluar == 1) return 'tepat_waktu';
   if (scoreKeluar < 1) return 'terlalu_cepat';
   return 'terlalu_cepat';
+}
+
+export function dayNameToNumber(dayName: string, defaultValue: number = 0): number {
+  const dayMap: { [key: string]: number } = {
+    'monday': 1,
+    'tuesday': 2,
+    'wednesday': 3,
+    'thursday': 4,
+    'friday': 5
+  };
+
+  const normalizedDay = dayName.trim().toLowerCase();
+  return dayMap[normalizedDay] ?? defaultValue;
+}
+
+export function normalizeTimeString(timeStr: string): string {
+  // Remove any whitespace and split by colon
+  const [hours, minutes] = timeStr.trim().split(':');
+  
+  // Parse hours and minutes
+  const hoursNum = parseInt(hours, 10);
+  const minutesNum = parseInt(minutes, 10);
+  
+  // Validate the time
+  if (isNaN(hoursNum) || isNaN(minutesNum) || 
+      hoursNum < 0 || hoursNum > 23 || 
+      minutesNum < 0 || minutesNum > 59) {
+    throw new Error(`Invalid time format: ${timeStr}`);
+  }
+  
+  // Format to HH:MM (2-digit padding)
+  return `${hoursNum.toString().padStart(2, '0')}:${minutesNum.toString().padStart(2, '0')}`;
+}
+
+export function parseYYY_MM_DD(s: string) {
+  const date = parse(s, 'yyyy-MM-dd', new Date());
+  return date;
+}
+
+export function parseYYYY_MM(s: string) {
+  const date = parse(s, 'yyyy-MM', new Date());
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth()
+  };
 }

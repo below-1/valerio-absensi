@@ -1,0 +1,1 @@
+ALTER TABLE `pegawai` ADD `status` text;

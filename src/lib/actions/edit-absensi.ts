@@ -96,6 +96,9 @@ export async function editAbsensi(formData: FormData) {
     pengumpulanSuratDispensasi: data.pengumpulanSuratDispensasi ?? null,
   } satisfies AbsensiInsertType;
 
+  console.log(val);
+  console.log("val");
+
   try {
     await db.update(absensi).set(val).where(eq(absensi.id, data.id));
 

@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, parseYYY_MM_DD, parseYYYY_MM } from "@/lib/utils";
 import { CalendarIcon, PlusCircle, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { format, parse } from "date-fns";
 import { id } from "date-fns/locale";
+import { Input } from "@/components/ui/input";
 
 const months = [
   { value: "1", label: "Januari" },
@@ -33,16 +34,13 @@ type RekapanActionsProps = {
   monthFilter?: string;
 }
 
-function parseYYY_MM_DD(s: string) {
-  const date = parse(s, 'yyyy-MM-dd', new Date());
-  return date;
-}
-
 export function RekapanActions({ category, dayFilter, monthFilter }: RekapanActionsProps) {
   const router = useRouter()
   const [rekapanView, setRekapanView] = useState<"bulanan" | "harian">(category);
   const [date, setDate] = useState<Date>(dayFilter ? parseYYY_MM_DD(dayFilter) : new Date());
-  const [selectedMonth, setSelectedMonth] = useState(String(new Date().getMonth() + 1));
+
+  const [year, setYear] = useState( monthFilter ? parseYYYY_MM(monthFilter).year : (new Date()).getFullYear() )
+  const [selectedMonth, setSelectedMonth] = useState(String(monthFilter ? parseYYYY_MM(monthFilter).year : (new Date()).getMonth() + 1));
 
   return (
     <>
@@ -92,29 +90,47 @@ export function RekapanActions({ category, dayFilter, monthFilter }: RekapanActi
           </Popover>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Pilih Bulan</span>
-          <Select 
-            value={selectedMonth} 
-            onValueChange={s => {
-              const ss = s.padStart(2, "0")
-              const y = format(date, 'yyyy');
-              const monthFilter = `${y}-${ss}`;
-              router.push(`/main/rekapan?category=bulanan&monthFilter=${monthFilter}`)
-              setSelectedMonth(s)
-            }}
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Pilih bulan" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Tahun</span>
+            <Input
+              type="number"
+              value={year}
+              onChange={r => {
+                const y = parseInt((r.target as any).value)
+                setYear(parseInt((r.target as any).value))
+                
+                const monthFilter = `${y}-${selectedMonth}`;
+                router.push(`/main/rekapan?category=bulanan&monthFilter=${monthFilter}`)
+              }}
+              min={2024}
+              max={2050}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Pilih Bulan</span>
+            <Select 
+              value={selectedMonth} 
+              onValueChange={s => {
+                setSelectedMonth(s)
+                const ss = s.padStart(2, "0")
+                const monthFilter = `${year}-${ss}`;
+                router.push(`/main/rekapan?category=bulanan&monthFilter=${monthFilter}`)
+                setSelectedMonth(s)
+              }}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Pilih bulan" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       )}
     </>

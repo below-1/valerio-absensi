@@ -1,7 +1,13 @@
-import { asc, sql } from "drizzle-orm";
+import { and, asc, eq, like, sql } from "drizzle-orm";
 import { db } from "../db";
 import { absensi, pegawai } from "./schema";
 import { splitDateString } from "../utils";
+
+export async function fetchPegawai(id: number) {
+  const r = await db.select().from(pegawai).where(eq(pegawai.id, id));
+  if (!r[0]) throw new Error("can't find pegawai with id = " + id);
+  return r[0];
+}
 
 export async function fetchPegawaiOptions() {
   const pegawaiOptions = await db.select({
@@ -22,11 +28,14 @@ export async function fetchRekapanAbsenByDay(dayFilter: string) {
     pegawaiId: pegawai.id,
     nip: pegawai.nip,
     nama: pegawai.nama,
-
     absensiId: absensi.id,
     tanggal: absensi.tanggal,
     jamMasuk: absensi.jamMasuk,
     jamKeluar: absensi.jamKeluar,
+    scoreMasuk: absensi.scoreMasuk,
+    scoreKeluar: absensi.scoreKeluar,
+    totalScore: absensi.totalScore,
+    dispensasi: absensi.dispensasi,
     statusMasuk: absensi.statusMasuk,
     statusKeluar: absensi.statusKeluar,
     suratDispensasi: absensi.suratDispensasi,
@@ -38,6 +47,47 @@ export async function fetchRekapanAbsenByDay(dayFilter: string) {
       sql`${absensi.pegawaiId} = ${pegawai.id} AND ${absensi.tanggal} LIKE ${prefix + "%"}`
     )
     .orderBy(pegawai.nama, absensi.tanggal);
+  return results;
+}
+
+export async function fetchRekapanAbsenByMonthAndPegawai(
+  monthFilter: string, 
+  pegawaiId: number
+) {
+
+  const results = await db.select({
+    // Pegawai fields (from left join)
+    pegawaiId: pegawai.id,
+    nip: pegawai.nip,
+    nama: pegawai.nama,
+    
+    // Absensi fields (primary table)
+    absensiId: absensi.id,
+    tanggal: absensi.tanggal,
+    jamMasuk: absensi.jamMasuk,
+    jamKeluar: absensi.jamKeluar,
+    scoreMasuk: absensi.scoreMasuk,
+    scoreKeluar: absensi.scoreKeluar,
+    totalScore: absensi.totalScore,
+    dispensasi: absensi.dispensasi,
+    statusMasuk: absensi.statusMasuk,
+    statusKeluar: absensi.statusKeluar,
+    suratDispensasi: absensi.suratDispensasi,
+    pengumpulanSuratDispensasi: absensi.pengumpulanSuratDispensasi,
+  })
+    .from(absensi) // Select from absensi as primary table
+    .leftJoin(
+      pegawai,
+      eq(absensi.pegawaiId, pegawai.id) // Join condition
+    )
+    .where(
+      and(
+        eq(absensi.pegawaiId, pegawaiId), // Filter by pegawaiId
+        like(absensi.tanggal, `${monthFilter}%`) // Filter by month
+      )
+    )
+    .orderBy(absensi.tanggal);
+  
   return results;
 }
 
