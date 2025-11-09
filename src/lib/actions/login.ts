@@ -37,5 +37,5 @@ export async function loginAction(formData: FormData) {
     .where(eq(users.username, username));
 
   // ✅ Redirect on success
-  redirect("/main");
+  redirect("/main/dashboard");
 }

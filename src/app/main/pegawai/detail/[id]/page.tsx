@@ -29,7 +29,6 @@ export default async function ListPegawaiPage({
   const pid = parseInt(ps.id)
 
   const monthItems = await fetchRekapanAbsenByMonthAndPegawai(monthFilter, pid);
-  console.log(monthItems);
 
   const pegawai = await fetchPegawai(pid)
 

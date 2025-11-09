@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { HeaderFilter } from "./header-filter";
 import { CheckCircle, Clock, LogOut, XCircle } from "lucide-react";
 import RekapanTopTable from "./rekapan-top-table";
+import { getSession } from "@/lib/actions/auth";
 
 type Props = {
   searchParams: Promise<{

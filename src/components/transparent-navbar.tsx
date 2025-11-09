@@ -16,15 +16,17 @@ import {
   X
 } from "lucide-react"
 import { AddAbsensiModal } from "./add-rekap-modal"
+import { logout } from "@/lib/actions/auth";
 
 type Props = {
   pegawaiOptions: {
     id: number;
     nama: string;
   }[];
+  session: any;
 }
 
-const Navbar = ({ pegawaiOptions }: Props) => {
+const Navbar = ({ pegawaiOptions, session }: Props) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigationItems = [
@@ -92,7 +94,7 @@ const Navbar = ({ pegawaiOptions }: Props) => {
                     <AvatarImage src="/user-avatar.png" alt="User" />
                     <AvatarFallback>U</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">Username</span>
+                  <span className="text-sm font-medium">{session.username}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -103,9 +105,13 @@ const Navbar = ({ pegawaiOptions }: Props) => {
                   Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  Logout
-                </DropdownMenuItem>
+                <form action={logout}>
+                  <DropdownMenuItem className="text-red-600" asChild>
+                    <button type="submit" className="w-full">
+                      Logout
+                    </button>
+                  </DropdownMenuItem>
+                </form>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -162,7 +168,7 @@ const Navbar = ({ pegawaiOptions }: Props) => {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          Username
+                          {session.username}
                         </p>
                         <p className="text-sm text-gray-500 truncate">
                           user@example.com
@@ -171,14 +177,6 @@ const Navbar = ({ pegawaiOptions }: Props) => {
                     </div>
                     
                     <div className="mt-4 space-y-1">
-                      <Button 
-                        variant="ghost" 
-                        className="w-full justify-start text-sm"
-                        onClick={closeMobileMenu}
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </Button>
                       <Button 
                         variant="ghost" 
                         className="w-full justify-start text-sm text-red-600 hover:text-red-700"

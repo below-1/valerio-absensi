@@ -105,11 +105,6 @@ export function AddAbsensiModal({ pegawaiOptions, variant = "default" }: AddAbse
   const statusMasuk = useMemo(() => calculateStatusMasuk(presensiMasuk, scoreMasuk), [ presensiMasuk, scoreMasuk ]);
   const statusKeluar = useMemo(() => calculateStatusKeluar(presensiKeluar, scoreKeluar), [ presensiKeluar, scoreKeluar ]);
 
-  useEffect(() => {
-    console.log("Score Masuk:", scoreMasuk);
-    console.log("Score Keluar:", scoreKeluar);
-  }, [scoreMasuk, scoreKeluar]);
-
   const onSubmit = (data: AbsensiFormData) => {
     startTransition(async () => {
       const formData = new FormData();
