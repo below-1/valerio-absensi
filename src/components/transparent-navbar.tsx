@@ -3,7 +3,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { LayoutDashboard, CalendarCheck, User, Users } from "lucide-react"
+import { LayoutDashboard, CalendarCheck, User, Users, LayoutDashboardIcon } from "lucide-react"
 import { AddAbsensiModal } from "./add-rekap-modal"
 
 type Props = {
@@ -29,6 +29,10 @@ const Navbar = ({ pegawaiOptions }: Props) => {
 
         {/* Center - Navigation Links */}
         <div className="flex items-center space-x-6">
+          <Link href="/main/dashboard" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors">
+            <LayoutDashboardIcon className="h-4 w-4 mr-1" />
+            Dashboard
+          </Link>
           <Link href="/main/pegawai/list" className="flex items-center text-sm font-medium text-gray-700 hover:text-primary transition-colors">
             <Users className="h-4 w-4 mr-1" />
             Pegawai

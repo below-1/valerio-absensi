@@ -42,7 +42,7 @@ export const absensi = sqliteTable("absensi", {
   jamMasuk: integer("jam_masuk"), // minutes since midnight
   jamKeluar: integer("jam_keluar"), // minutes since midnight
 
-  statusMasuk: text("status_masuk", { enum: statusMasukEnum }).notNull(),
+  statusMasuk: text("status_masuk", { enum: statusMasukEnum }),
   statusKeluar: text("status_keluar", { enum: statusKeluarEnum }),
 
   suratDispensasi: text("surat_dispensasi"),

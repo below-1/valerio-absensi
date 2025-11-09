@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,19 +21,26 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { set, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addAbsensi } from "@/lib/actions/add-absensi";
 import { StatusKeluar, statusKeluarEnum, StatusMasuk, statusMasukEnum } from "@/lib/db/schema";
 import { toast } from "sonner";
+import { Checkbox } from "./ui/checkbox";
 
 const absensiSchema = z.object({
   pegawaiId: z.number().min(1, "Pilih pegawai"),
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
+
+  stMasuk: z.boolean().optional(),
+  stKeluar: z.boolean().optional(),
+
   jamMasuk: z.string().optional(),
   jamKeluar: z.string().optional(),
-  statusMasuk: z.enum(statusMasukEnum),
+  
+  statusMasuk: z.enum(statusMasukEnum).optional(),
   statusKeluar: z.enum(statusKeluarEnum).optional(),
+
   suratDispensasi: z.string().optional(),
   pengumpulanSuratDispensasi: z.string().optional(),
 });
@@ -56,13 +63,38 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
   const {
     register,
     handleSubmit,
+    watch,
     setValue,
     reset,
     formState: { errors },
   } = useForm<AbsensiFormData>({
     resolver: zodResolver(absensiSchema),
-    defaultValues: { pegawaiId: 0, tanggal: "", statusMasuk: "tepat_waktu" },
+    defaultValues: { 
+      pegawaiId: 0, 
+      tanggal: "", 
+      statusMasuk: "tepat_waktu",
+      stMasuk: false,
+      stKeluar: false,
+    },
   });
+
+  const [stMasuk, stKeluar] = watch(["stMasuk", "stKeluar"]);
+
+  useEffect(() => {
+    if (stMasuk) {
+      setValue("jamMasuk", undefined);
+      setValue("statusMasuk", "tepat_waktu");
+    } else {
+      setValue("statusMasuk", undefined);
+    }
+
+    if (stKeluar) {
+      setValue("jamKeluar", undefined);
+      setValue("statusKeluar", "tepat_waktu");
+    } else {
+      setValue("statusKeluar", undefined);
+    }
+  }, [stMasuk, stKeluar, setValue]);
 
   const onSubmit = (data: AbsensiFormData) => {
     startTransition(async () => {
@@ -101,7 +133,7 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
           <div className="space-y-2">
             <Label htmlFor="pegawaiId">Pegawai</Label>
             <Select onValueChange={(v) => setValue("pegawaiId", Number(v))}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Pilih pegawai" />
               </SelectTrigger>
               <SelectContent>
@@ -126,56 +158,94 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
             )}
           </div>
 
+          {/* ST Masuk dan keluar */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="stMasuk" 
+                checked={stMasuk} 
+                onCheckedChange={e => {
+                  setValue("stMasuk", Boolean(e))
+                }}
+              />
+              <Label htmlFor="stMasuk">Surat Tugas Masuk</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="stKeluar"
+                checked={stKeluar} 
+                onCheckedChange={e => {
+                  setValue("stKeluar", Boolean(e))
+                }}
+              />
+              <Label htmlFor="stKeluar">Surat Tugas Keluar</Label>
+            </div>
+          </div>
+
           {/* Jam Masuk & Keluar */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="jamMasuk">Jam Masuk</Label>
-              <Input id="jamMasuk" type="time" {...register("jamMasuk")} />
+              <Input 
+                id="jamMasuk" 
+                type="time" 
+                {...register("jamMasuk")} 
+                disabled={stMasuk}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="jamKeluar">Jam Keluar</Label>
-              <Input id="jamKeluar" type="time" {...register("jamKeluar")} />
+              <Input 
+                id="jamKeluar" 
+                type="time" 
+                {...register("jamKeluar")} 
+                disabled={stKeluar}
+              />
             </div>
           </div>
 
-          {/* Status Masuk */}
-          <div className="space-y-2">
-            <Label>Status Masuk</Label>
-            <Select onValueChange={(v) => setValue("statusMasuk", v as StatusMasuk)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih status masuk" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusMasukOptions.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.statusMasuk && (
-              <p className="text-red-500 text-sm">
-                {errors.statusMasuk.message}
-              </p>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Status Masuk */}
+            <div className="space-y-2">
+              <Label>Status Masuk</Label>
+              <Select value={watch("statusMasuk")} onValueChange={(v) => setValue("statusMasuk", v as StatusMasuk)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih status masuk" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusMasukOptions.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.statusMasuk && (
+                <p className="text-red-500 text-sm">
+                  {errors.statusMasuk.message}
+                </p>
+              )}
+            </div>
+            {/* Status Keluar */}
+            <div className="space-y-2">
+              <Label>Status Keluar</Label>
+              <Select value={watch("statusKeluar")} onValueChange={(v) => setValue("statusKeluar", v as StatusKeluar)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Pilih status keluar (opsional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusKeluarOptions.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          {/* Status Keluar */}
-          <div className="space-y-2">
-            <Label>Status Keluar</Label>
-            <Select onValueChange={(v) => setValue("statusKeluar", v as StatusKeluar)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih status keluar (opsional)" />
-              </SelectTrigger>
-              <SelectContent>
-                {statusKeluarOptions.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          
+
 
           {/* Surat Dispensasi */}
           <div className="space-y-2">
