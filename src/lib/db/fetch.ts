@@ -118,5 +118,7 @@ export async function fetchRekapanAbsenByMonth(monthFilter: string) {
       totalScore: (r.totalInScore + r.totalOutScore)
     }
   })
+  console.log(mapped)
+  console.log("mapped")
   return mapped;
 }

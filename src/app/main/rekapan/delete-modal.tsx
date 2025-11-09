@@ -15,15 +15,31 @@ import {
 } from '@/components/ui/alert-dialog'
 import { deleteAbsensiAction } from '@/lib/actions/remove-absensi' 
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
-export function DeleteModal({ id, children }: { id: number, children?: React.ReactNode }) {
+type Props = { 
+  id: number;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+export function DeleteModal({ id, open, setOpen }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [open, setOpen] = useState(false)
 
   function handleDelete() {
     startTransition(async () => {
-      await deleteAbsensiAction(id)
+      const r = await deleteAbsensiAction(id)
+      if (r && !r.success) {
+        // handle error, e.g. show toast
+        if (r.error && typeof r.error === 'string') {
+          toast.error(r.error)
+        }
+        console.error(r.error)
+        return
+      } else {
+        toast.success("Sukses menghapus data absensi");
+      }
       setOpen(false)
       router.refresh()
     })
@@ -31,9 +47,6 @@ export function DeleteModal({ id, children }: { id: number, children?: React.Rea
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        {children ? children : <Button variant="ghost" size="sm" className="w-full">Hapus</Button>}
-      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Hapus Data Absensi?</AlertDialogTitle>

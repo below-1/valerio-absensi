@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { DeleteModal } from "./delete-modal";
+import { EditAbsensiModal } from "@/components/edit-absensi-modal";
+import { AbsensiFormData } from "@/components/add-rekap-modal";
 
 // Types
 type StatusMasuk = "tepat_waktu" | "telat" | "alfa" | null;
@@ -60,8 +62,13 @@ const statusBadge = (s: StatusMasuk | StatusKeluar | null) => {
   }
 };
 
+type Props = {
+  results: Row[];
+  pegawaiOptions: { id: number; nama: string }[];
+}
+
 // Component
-export default function RekapanTablePerDay({ results }: { results: Row[] }) {
+export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
   const [query, setQuery] = useState("");
 
   const filtered = results.filter((r) => {
@@ -70,106 +77,141 @@ export default function RekapanTablePerDay({ results }: { results: Row[] }) {
     return r.nama.toLowerCase().includes(q) || r.nip.toLowerCase().includes(q);
   });
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedAbsensi, setSelectedAbsensi] = useState<Row | undefined>();
+  const passedData = useMemo(() => {
+    return selectedAbsensi ? {
+      ...selectedAbsensi,
+      id: selectedAbsensi.absensiId!,
+      jamMasuk: minutesToHHMM(selectedAbsensi.jamMasuk),
+      jamKeluar: minutesToHHMM(selectedAbsensi.jamKeluar),
+      tanggal: selectedAbsensi.tanggal ?? "",
+      statusMasuk: selectedAbsensi.statusMasuk ?? "tepat_waktu",
+      statusKeluar: selectedAbsensi.statusKeluar ?? "tepat_waktu",
+    } : undefined;
+  }, [ selectedAbsensi ])
+
   const onDelete = () => {
 
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div>
-          <CardTitle>Daftar Pegawai & Absensi</CardTitle>
-          <p className="text-sm text-muted-foreground">Data absensi pegawai (tanpa grouping)</p>
-        </div>
+    <>
+      <EditAbsensiModal
+        absensi={passedData}
+        open={editOpen}
+        setOpen={setEditOpen}
+        pegawaiOptions={pegawaiOptions}
+      />
 
-        <div className="flex items-center gap-2">
-          <Input
-            placeholder="Cari nama atau NIP..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="w-[260px]"
-          />
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setQuery("");
-            }}
-          >
-            Reset
-          </Button>
-        </div>
-      </CardHeader>
+      <DeleteModal
+        id={selectedAbsensi?.absensiId ?? 0}
+        open={deleteOpen}
+        setOpen={setDeleteOpen}
+      />      
 
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Pegawai</TableHead>
-              <TableHead>NIP</TableHead>
-              <TableHead>Tanggal</TableHead>
-              <TableHead>Masuk</TableHead>
-              <TableHead>Keluar</TableHead>
-              <TableHead>Status Masuk</TableHead>
-              <TableHead>Status Keluar</TableHead>
-              <TableHead>Surat Dispensasi</TableHead>
-              <TableHead>Pengumpulan Surat</TableHead>
-            </TableRow>
-          </TableHeader>
+      <Card className="w-full">
+        <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <div>
+            <CardTitle>Daftar Pegawai & Absensi</CardTitle>
+            <p className="text-sm text-muted-foreground">Data absensi pegawai (tanpa grouping)</p>
+          </div>
 
-          <TableBody>
-            {filtered.length === 0 ? (
+          <div className="flex items-center gap-2">
+            <Input
+              placeholder="Cari nama atau NIP..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-[260px]"
+            />
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setQuery("");
+              }}
+            >
+              Reset
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-6">
-                  Tidak ada data
-                </TableCell>
+                <TableHead>Pegawai</TableHead>
+                <TableHead>NIP</TableHead>
+                <TableHead>Tanggal</TableHead>
+                <TableHead>Masuk</TableHead>
+                <TableHead>Keluar</TableHead>
+                <TableHead>Status Masuk</TableHead>
+                <TableHead>Status Keluar</TableHead>
+                <TableHead>Surat Dispensasi</TableHead>
+                <TableHead>Pengumpulan Surat</TableHead>
               </TableRow>
-            ) : (
-              filtered.map((r) => (
-                <TableRow key={r.absensiId ?? `pegawai-${r.pegawaiId}`}>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{r.nama}</span>
-                      <span className="text-sm text-muted-foreground">ID: {r.pegawaiId}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{r.nip}</TableCell>
-                  <TableCell>{r.tanggal ?? "-"}</TableCell>
-                  <TableCell>{minutesToHHMM(r.jamMasuk)}</TableCell>
-                  <TableCell>{minutesToHHMM(r.jamKeluar)}</TableCell>
-                  <TableCell>{statusBadge(r.statusMasuk)}</TableCell>
-                  <TableCell>{statusBadge(r.statusKeluar)}</TableCell>
-                  <TableCell>{r.suratDispensasi ?? "-"}</TableCell>
-                  <TableCell>{r.pengumpulanSuratDispensasi ?? "-"}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          onClick={() => console.log("Edit", r)}>
-                          Edit
-                        </DropdownMenuItem>
-                        {r.absensiId && (
-                          <DropdownMenuItem asChild>
-                            <DeleteModal
-                              id={r.absensiId}
-                            />
-                          </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+            </TableHeader>
+
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="text-center py-6">
+                    Tidak ada data
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+              ) : (
+                filtered.map((r) => (
+                  <TableRow key={r.absensiId ?? `pegawai-${r.pegawaiId}`}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{r.nama}</span>
+                        <span className="text-sm text-muted-foreground">ID: {r.pegawaiId}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{r.nip}</TableCell>
+                    <TableCell>{r.tanggal ?? "-"}</TableCell>
+                    <TableCell>{minutesToHHMM(r.jamMasuk)}</TableCell>
+                    <TableCell>{minutesToHHMM(r.jamKeluar)}</TableCell>
+                    <TableCell>{statusBadge(r.statusMasuk)}</TableCell>
+                    <TableCell>{statusBadge(r.statusKeluar)}</TableCell>
+                    <TableCell>{r.suratDispensasi ?? "-"}</TableCell>
+                    <TableCell>{r.pengumpulanSuratDispensasi ?? "-"}</TableCell>
+                    <TableCell>
+                      {!!(r.absensiId) && (  
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setSelectedAbsensi(r);
+                                setEditOpen(true);
+                              }}>
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                setSelectedAbsensi(r);
+                                setDeleteOpen(true);
+                              }}>
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </>
   );
 }

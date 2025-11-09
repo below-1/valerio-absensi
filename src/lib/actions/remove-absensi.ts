@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { absensi } from "../db/schema";
 import { revalidatePath } from "next/cache";
+import { success } from "zod";
 
 export async function deleteAbsensiAction(id: number) {
   try {
@@ -13,6 +14,9 @@ export async function deleteAbsensiAction(id: number) {
     revalidatePath('/main/rekapan')
   } catch (error) {
     console.error('Failed to delete absensi:', error)
-    throw new Error('Gagal menghapus data absensi')
+    return {
+      success: false,
+      error: 'Gagal menghapus data absensi. Silakan coba lagi.'
+    }
   }
 }

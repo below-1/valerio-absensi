@@ -79,6 +79,7 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
           return;
         }
       }
+      toast.success("Sukses menambahkan absensi.");
       reset();
       setOpen(false);
     });
