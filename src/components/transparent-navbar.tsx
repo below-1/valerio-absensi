@@ -23,10 +23,11 @@ type Props = {
     id: number;
     nama: string;
   }[];
-  session: any;
+  isPublic?: boolean;
+  session?: any;
 }
 
-const Navbar = ({ pegawaiOptions, session }: Props) => {
+const Navbar = ({ isPublic, pegawaiOptions, session }: Props) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const navigationItems = [
@@ -80,48 +81,54 @@ const Navbar = ({ pegawaiOptions, session }: Props) => {
                 {item.label}
               </Link>
             ))}
-            <AddAbsensiModal 
-              pegawaiOptions={pegawaiOptions} 
-            />
+            {!isPublic && (
+              <AddAbsensiModal 
+                pegawaiOptions={pegawaiOptions} 
+              />
+            )}
           </div>
 
           {/* Right Side - User Dropdown (Desktop) */}
-          <div className="hidden md:flex items-center space-x-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="/user-avatar.png" alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">{session.username}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <form action={logout}>
-                  <DropdownMenuItem className="text-red-600" asChild>
-                    <button type="submit" className="w-full">
-                      Logout
-                    </button>
+          {session &&  !isPublic && (
+            <div className="hidden md:flex items-center space-x-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="/user-avatar.png" alt="User" />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{session?.username}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
                   </DropdownMenuItem>
-                </form>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                  <DropdownMenuSeparator />
+                  <form action={logout}>
+                    <DropdownMenuItem className="text-red-600" asChild>
+                      <button type="submit" className="w-full">
+                        Logout
+                      </button>
+                    </DropdownMenuItem>
+                  </form>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center space-x-2">
-            <AddAbsensiModal 
-              pegawaiOptions={pegawaiOptions}
-              variant="icon"
-            />
+            {isPublic && (
+              <AddAbsensiModal 
+                pegawaiOptions={pegawaiOptions}
+                variant="icon"
+              />
+            )}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -168,7 +175,7 @@ const Navbar = ({ pegawaiOptions, session }: Props) => {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {session.username}
+                          {session?.username}
                         </p>
                         <p className="text-sm text-gray-500 truncate">
                           user@example.com

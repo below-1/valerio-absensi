@@ -10,12 +10,12 @@ export async function middleware(request: NextRequest) {
   // Protected routes
   if (request.nextUrl.pathname.startsWith('/main')) {
     if (!payload?.userId) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return NextResponse.redirect(new URL('/auth', request.url))
     }
   }
 
   // Auth routes (login, register) - redirect if already authenticated
-  if (request.nextUrl.pathname == '/') {
+  if (request.nextUrl.pathname == '/auth') {
     if (payload?.userId) {
       return NextResponse.redirect(new URL('/main/dashboard', request.url))
     }
