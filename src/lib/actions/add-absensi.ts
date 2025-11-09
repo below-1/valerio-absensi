@@ -2,8 +2,9 @@
 
 import { db } from "@/lib/db"; // your drizzle db instance
 import { absensi, AbsensiInsertType, StatusKeluar, statusKeluarEnum, StatusMasuk, statusMasukEnum } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { success, z } from "zod";
 
 const absensiSchema = z.object({
   pegawaiId: z.coerce.number().min(1, "Pegawai wajib dipilih"),
@@ -29,7 +30,29 @@ export async function addAbsensi(formData: FormData) {
 
   if (!parsed.success) {
     console.error(parsed.error.flatten());
-    throw new Error("Invalid input data");
+    return {
+      success: false,
+      error: parsed.error.flatten(),
+    }
+  }
+
+  // Check for duplicate tanggal for the same pegawai
+  const existing = await db
+    .select()
+    .from(absensi)
+    .where(
+      and(
+        eq(absensi.pegawaiId, parsed.data.pegawaiId),
+        eq(absensi.tanggal, parsed.data.tanggal)
+      )
+    )
+    .all();
+
+  if (existing.length > 0) {
+    return {
+      success: false,
+      error: "Absensi untuk pegawai pada tanggal tersebut sudah ada."
+    }
   }
 
   const data = parsed.data;

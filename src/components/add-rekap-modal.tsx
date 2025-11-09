@@ -25,6 +25,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addAbsensi } from "@/lib/actions/add-absensi";
 import { StatusKeluar, statusKeluarEnum, StatusMasuk, statusMasukEnum } from "@/lib/db/schema";
+import { toast } from "sonner";
 
 const absensiSchema = z.object({
   pegawaiId: z.number().min(1, "Pilih pegawai"),
@@ -70,7 +71,14 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
         if (v !== undefined && v !== null) formData.append(k, String(v));
       });
 
-      await addAbsensi(formData);
+      const result = await addAbsensi(formData);
+      if (result) {
+        if (!result.success) {
+          const message = typeof result.error === "string" ? result.error : "Gagal menambahkan absensi. Silakan coba lagi.";
+          toast.error(message);
+          return;
+        }
+      }
       reset();
       setOpen(false);
     });
