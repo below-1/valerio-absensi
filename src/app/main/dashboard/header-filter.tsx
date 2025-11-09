@@ -1,9 +1,6 @@
 'use client';
 
 import { useRouter } from "next/navigation"
-import { RekapanViewSelect } from "@/components/rekapan-view-select";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn, parseYYYY_MM } from "@/lib/utils";
@@ -30,11 +27,10 @@ const months = [
 
 type RekapanActionsProps = {
   monthFilter?: string;
-  pid: number;
 }
 
 
-export function HeaderFilter({ monthFilter, pid }: RekapanActionsProps) {
+export function HeaderFilter({ monthFilter }: RekapanActionsProps) {
   const router = useRouter()
 
   const [year, setYear] = useState( monthFilter ? parseYYYY_MM(monthFilter).year : (new Date()).getFullYear() )
@@ -54,7 +50,7 @@ export function HeaderFilter({ monthFilter, pid }: RekapanActionsProps) {
             setYear(parseInt((r.target as any).value))
             
             const monthFilter = `${y}-${selectedMonth.padStart(2, "0")}`;
-            router.push(`/main/pegawai/detail/${pid}?category=bulanan&monthFilter=${monthFilter}`)
+            router.push(`/main/dashboard?monthFilter=${monthFilter}`)
           }}
           min={2023}
           max={2050}
@@ -68,7 +64,7 @@ export function HeaderFilter({ monthFilter, pid }: RekapanActionsProps) {
             setSelectedMonth(s)
             const ss = s.padStart(2, "0")
             const monthFilter = `${year}-${ss}`;
-            router.push(`/main/pegawai/detail/${pid}?monthFilter=${monthFilter}`)
+            router.push(`/main/dashboard?monthFilter=${monthFilter}`)
             setSelectedMonth(s)
           }}
         >

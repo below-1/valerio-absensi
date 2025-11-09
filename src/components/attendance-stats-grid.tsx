@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, CheckCircle, LogOut, XCircle } from "lucide-react";
+import { Clock, CheckCircle, LogOut, XCircle, LucideIcon } from "lucide-react";
 
 // current month name
 type MonthOptions = {
@@ -52,7 +52,20 @@ const stats = [
   },
 ];
 
-export default function AttendanceStatsGrid() {
+type Props = {
+  stats: {
+    title: string;
+    value: number;
+    total: number;
+    icon: LucideIcon;
+    color: string;
+    iconColor: string;
+  }[]
+}
+
+export default function AttendanceStatsGrid({
+  stats
+}: Props) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
       {stats.map((item, i) => {

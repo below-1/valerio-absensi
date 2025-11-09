@@ -1,4 +1,4 @@
-import { and, asc, eq, like, sql } from "drizzle-orm";
+import { and, asc, count, eq, like, sql } from "drizzle-orm";
 import { db } from "../db";
 import { absensi, pegawai } from "./schema";
 import { splitDateString } from "../utils";
@@ -171,4 +171,79 @@ export async function fetchRekapanAbsenByMonth(monthFilter: string) {
   console.log(mapped)
   console.log("mapped")
   return mapped;
+}
+
+interface AttendanceStats {
+  totals: {
+    tepatWaktuMasuk: number;
+    telat: number;
+    terlaluCepat: number;
+    alfa: number;
+    tepatWaktuKeluar: number;
+  };
+  percentages: {
+    tepatWaktuMasuk: number;
+    telat: number;
+    terlaluCepat: number;
+    alfa: number;
+    tepatWaktuKeluar: number;
+  };
+  totalRecords: number;
+}
+
+
+export async function calculateAttendanceStatsDrizzle(
+  monthFilter?: string
+): Promise<AttendanceStats> {
+  // Build where condition for month filter
+  let whereCondition = undefined;
+
+  if (monthFilter) {
+    // Validate the monthFilter format (YYYY-MM)
+    const monthRegex = /^\d{4}-\d{2}$/;
+    if (!monthRegex.test(monthFilter)) {
+      throw new Error('monthFilter must be in YYYY-MM format');
+    }
+
+    // Create condition to filter records for the specific month
+    whereCondition = sql`${absensi.tanggal} LIKE ${monthFilter + '%'}`;
+  }
+
+  // Single query using conditional aggregation with Drizzle
+  const [result] = await db
+    .select({
+      totalRecords: count(),
+      tepatWaktuMasuk: sql<number>`sum(case when ${absensi.statusMasuk} = 'tepat_waktu' then 1 else 0 end)`,
+      telat: sql<number>`sum(case when ${absensi.statusMasuk} = 'telat' then 1 else 0 end)`,
+      alfa: sql<number>`sum(case when ${absensi.statusMasuk} = 'alfa' then 1 else 0 end)`,
+      terlaluCepat: sql<number>`sum(case when ${absensi.statusKeluar} = 'terlalu_cepat' then 1 else 0 end)`,
+      tepatWaktuKeluar: sql<number>`sum(case when ${absensi.statusKeluar} = 'tepat_waktu' then 1 else 0 end)`,
+    })
+    .from(absensi)
+    .where(whereCondition);
+
+  const totalRecords = result.totalRecords || 0;
+
+  // Calculate percentages
+  const calculatePercentage = (count: number): number => {
+    return totalRecords > 0 ? Math.round((count / totalRecords) * 100 * 100) / 100 : 0;
+  };
+
+  return {
+    totals: {
+      tepatWaktuMasuk: result.tepatWaktuMasuk || 0,
+      telat: result.telat || 0,
+      terlaluCepat: result.terlaluCepat || 0,
+      alfa: result.alfa || 0,
+      tepatWaktuKeluar: result.tepatWaktuKeluar || 0,
+    },
+    percentages: {
+      tepatWaktuMasuk: calculatePercentage(result.tepatWaktuMasuk || 0),
+      telat: calculatePercentage(result.telat || 0),
+      terlaluCepat: calculatePercentage(result.terlaluCepat || 0),
+      alfa: calculatePercentage(result.alfa || 0),
+      tepatWaktuKeluar: calculatePercentage(result.tepatWaktuKeluar || 0),
+    },
+    totalRecords
+  };
 }

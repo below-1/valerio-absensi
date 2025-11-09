@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
+import { Check, Hourglass, MoreVertical } from "lucide-react";
 import { DeleteModal } from "./delete-modal";
 import { EditAbsensiModal } from "@/components/edit-absensi-modal";
 import { AbsensiFormData } from "@/components/add-rekap-modal";
@@ -181,7 +181,7 @@ export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
                     <TableCell>{minutesToHHMM(r.jamKeluar)}</TableCell>
                     <TableCell>{statusBadge(r.statusMasuk)}</TableCell>
                     <TableCell>{statusBadge(r.statusKeluar)}</TableCell>
-                    <TableCell>{r.suratDispensasi ?? "-"}</TableCell>
+                    <TableCell>{r.dispensasi ?? <Hourglass className="size-5 text-red-500" />}</TableCell>
                     <TableCell>{r.scoreMasuk}</TableCell>
                     <TableCell>{r.scoreKeluar}</TableCell>
                     <TableCell>
