@@ -21,6 +21,10 @@ const absensiSchema = z.object({
   jamKeluar: z.string().optional(),
   statusMasuk: z.enum(statusMasukEnum),
   statusKeluar: z.enum(statusKeluarEnum).optional(),
+  scoreMasuk: z.coerce.number().min(-5).max(5),
+  scoreKeluar: z.coerce.number().min(-5).max(5),
+  totalScore: z.coerce.number().min(-10).max(10),
+  dispensasi: z.coerce.boolean().optional(),
   suratDispensasi: z.string().optional(),
   pengumpulanSuratDispensasi: z.string().optional(),
 });
@@ -84,6 +88,10 @@ export async function editAbsensi(formData: FormData) {
     jamKeluar: toMinutes(data.jamKeluar),
     statusMasuk: data.statusMasuk as StatusMasuk,
     statusKeluar: data.statusKeluar as StatusKeluar,
+    scoreMasuk: data.scoreMasuk,
+    scoreKeluar: data.scoreKeluar,
+    totalScore: data.totalScore,
+    dispensasi: data.dispensasi,
     suratDispensasi: data.suratDispensasi ?? null,
     pengumpulanSuratDispensasi: data.pengumpulanSuratDispensasi ?? null,
   } satisfies AbsensiInsertType;

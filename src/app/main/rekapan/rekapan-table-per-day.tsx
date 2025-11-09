@@ -34,6 +34,8 @@ type Row = {
   jamKeluar: number | null;
   statusMasuk: StatusMasuk;
   statusKeluar: StatusKeluar;
+  presensiMasuk: AbsensiFormData["presensiMasuk"];
+  presensiKeluar: AbsensiFormData["presensiKeluar"];
   suratDispensasi: string | null;
   pengumpulanSuratDispensasi: string | null;
 };
@@ -98,12 +100,13 @@ export default function RekapanTablePerDay({ results, pegawaiOptions }: Props) {
 
   return (
     <>
-      <EditAbsensiModal
-        absensi={passedData}
+      {passedData && <EditAbsensiModal
+        absensiData={passedData}
         open={editOpen}
         setOpen={setEditOpen}
         pegawaiOptions={pegawaiOptions}
-      />
+      />}
+      
 
       <DeleteModal
         id={selectedAbsensi?.absensiId ?? 0}
