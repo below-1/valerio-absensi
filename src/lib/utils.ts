@@ -64,9 +64,10 @@ export const minutesToHHMM = (mins: number | null) => {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 };
 
-export function timeStringToMinutes(timeString: string): number {
+export function timeStringToMinutes(timeString: string): number | null {
     if (!timeString || typeof timeString !== 'string') {
-        throw new Error('Invalid time string: must be a non-empty string');
+      console.log('Invalid time string: must be a non-empty string');
+      return null;
     }
 
     // Remove any whitespace and split by colon
@@ -74,7 +75,8 @@ export function timeStringToMinutes(timeString: string): number {
     const parts = cleanTimeString.split(':');
     
     if (parts.length !== 2) {
-        throw new Error('Invalid time format: must be in HH:MM format');
+        console.log('Invalid time format: must be in HH:MM format');
+        return null;
     }
 
     const hours = parseInt(parts[0], 10);
@@ -82,15 +84,18 @@ export function timeStringToMinutes(timeString: string): number {
 
     // Validate hours and minutes ranges
     if (isNaN(hours) || isNaN(minutes)) {
-        throw new Error('Invalid time: hours and minutes must be numbers');
+        console.log('Invalid time: hours and minutes must be numbers');
+        return null;
     }
 
     if (hours < 0 || hours > 23) {
-        throw new Error('Invalid hours: must be between 0 and 23');
+        console.log('Invalid hours: must be between 0 and 23');
+        return null;
     }
 
     if (minutes < 0 || minutes > 59) {
-        throw new Error('Invalid minutes: must be between 0 and 59');
+        console.log('Invalid minutes: must be between 0 and 59');
+        return null;
     }
 
     return (hours * 60) + minutes;

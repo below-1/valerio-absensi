@@ -12,7 +12,7 @@ export const useScoreMasuk = (presensiMasuk: PresensiType, jamMasuk: string | nu
   const scoreMasuk = useMemo(() => {
     return calculateAbsensiMasukScore({
       presensi: presensiMasuk,
-      jamMasuk: jamMasuk ? timeStringToMinutes(jamMasuk) : null,
+      jamMasuk: jamMasuk && typeof jamMasuk === 'string' ? timeStringToMinutes(jamMasuk) : null,
     })
   }, [ presensiMasuk, jamMasuk ])
   return scoreMasuk
@@ -20,11 +20,13 @@ export const useScoreMasuk = (presensiMasuk: PresensiType, jamMasuk: string | nu
 
 export const useScoreKeluar = (presensiMasuk: PresensiType, presensiKeluar: PresensiType, jamMasuk: string | null, jamKeluar: string | null, weekday: number) => {
   const scoreKeluar = useMemo(() => {
+    console.log("jamMasuk: ", jamMasuk)
+    console.log("jamKeluar: ", jamKeluar)
     return calculateAbsensiKeluarScore({
       presensiMasuk: presensiMasuk,
       presensiKeluar: presensiKeluar,
-      jamMasuk: jamMasuk ? timeStringToMinutes(jamMasuk) : null,
-      jamKeluar: jamKeluar ? timeStringToMinutes(jamKeluar) : null,
+      jamMasuk: jamMasuk && typeof jamMasuk === 'string' ? timeStringToMinutes(jamMasuk) : null,
+      jamKeluar: jamKeluar && typeof jamKeluar === 'string' ? timeStringToMinutes(jamKeluar) : null,
       weekday
     })
   }, [ presensiKeluar, presensiMasuk, jamMasuk, jamKeluar, weekday ]);

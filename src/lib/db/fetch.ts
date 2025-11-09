@@ -101,57 +101,25 @@ export async function fetchRekapanAbsenByMonth(monthFilter: string) {
 
       // 🕒 Total "In" score
       totalInScore: sql<number>`
-        SUM(
-          CASE
-            WHEN ${absensi.statusMasuk} = 'alfa' THEN -5
-            WHEN ${absensi.jamMasuk} <= 450 THEN 5
-            WHEN ${absensi.jamMasuk} BETWEEN 451 AND 480 THEN 3
-            WHEN ${absensi.jamMasuk} BETWEEN 481 AND 510 THEN 2
-            WHEN ${absensi.jamMasuk} > 510 THEN 1
-            ELSE 0
-          END
-        )
+        SUM(${absensi.scoreMasuk})
       `.as("total_in_score"),
 
       rataRataIn: sql<number>`
         ROUND(AVG(
-          CASE
-            WHEN ${absensi.statusMasuk} = 'alfa' THEN -5
-            WHEN ${absensi.jamMasuk} <= 450 THEN 5
-            WHEN ${absensi.jamMasuk} BETWEEN 451 AND 480 THEN 3
-            WHEN ${absensi.jamMasuk} BETWEEN 481 AND 510 THEN 2
-            WHEN ${absensi.jamMasuk} > 510 THEN 1
-            ELSE 0
-          END
+          ${absensi.scoreMasuk}
         ), 2)
       `.as("rata_rata_in"),
 
       // 🕔 Total "Out" score
       totalOutScore: sql<number>`
         SUM(
-          CASE
-            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND ${absensi.jamKeluar} >= 960 THEN 1
-            WHEN ${absensi.weekday} = 5 AND ${absensi.jamKeluar} >= 990 THEN 1
-            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 510 THEN 1
-            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 540 THEN 1
-            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 510 THEN -2
-            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 540 THEN -2
-            ELSE 0
-          END
+          ${absensi.scoreKeluar}
         )
       `.as("total_out_score"),
 
       rataRataOut: sql<number>`
         ROUND(AVG(
-          CASE
-            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND ${absensi.jamKeluar} >= 960 THEN 1
-            WHEN ${absensi.weekday} = 5 AND ${absensi.jamKeluar} >= 990 THEN 1
-            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 510 THEN 1
-            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) >= 540 THEN 1
-            WHEN ${absensi.weekday} BETWEEN 1 AND 4 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 510 THEN -2
-            WHEN ${absensi.weekday} = 5 AND (${absensi.jamKeluar} - ${absensi.jamMasuk}) < 540 THEN -2
-            ELSE 0
-          END
+          ${absensi.scoreKeluar}
         ), 2)
       `.as("rata_rata_out"),
     })
@@ -168,8 +136,6 @@ export async function fetchRekapanAbsenByMonth(monthFilter: string) {
       totalScore: (r.totalInScore + r.totalOutScore)
     }
   })
-  console.log(mapped)
-  console.log("mapped")
   return mapped;
 }
 

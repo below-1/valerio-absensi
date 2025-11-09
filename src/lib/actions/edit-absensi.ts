@@ -33,7 +33,8 @@ const absensiSchema = z.object({
 function toMinutes(time?: string | null) {
   if (!time) return null;
   const [h, m] = time.split(":").map(Number);
-  return h * 60 + m;
+  const r = h * 60 + m;
+  return isNaN(r) ? null : r;
 }
 
 export async function editAbsensi(formData: FormData) {
@@ -95,9 +96,6 @@ export async function editAbsensi(formData: FormData) {
     suratDispensasi: data.suratDispensasi ?? null,
     pengumpulanSuratDispensasi: data.pengumpulanSuratDispensasi ?? null,
   } satisfies AbsensiInsertType;
-
-  console.log(val);
-  console.log("val");
 
   try {
     await db.update(absensi).set(val).where(eq(absensi.id, data.id));

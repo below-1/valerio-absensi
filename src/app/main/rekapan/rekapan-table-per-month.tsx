@@ -28,7 +28,6 @@ interface ResultsTableProps {
 }
 
 const RekapanTablePerMonth: React.FC<ResultsTableProps> = ({ data }) => {
-  console.log(data)
   // Sort data by totalScore descending for ranking
   const sortedData = [...data].sort((a, b) => b.totalScore - a.totalScore);
   const maxScore = Math.max(...sortedData.map((d) => d.totalScore), 1);

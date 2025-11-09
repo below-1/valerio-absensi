@@ -124,6 +124,11 @@ export const EditAbsensiModal: React.FC<EditAbsensiModalProps> = ({
     tanggal
   ] = watch(["presensiMasuk", "presensiKeluar", 'jamMasuk', 'jamKeluar', "tanggal"]);
 
+  useEffect(() => {
+    console.log("jamMasuk", jamMasuk)
+    console.log("jamKeluar", jamKeluar)
+  }, [ jamMasuk, jamKeluar ])
+
   const weekDay = useWeekDay(tanggal);
   const scoreMasuk = useScoreMasuk(presensiMasuk, jamMasuk ?? null);
   const scoreKeluar = useScoreKeluar(presensiMasuk, presensiKeluar, jamMasuk ?? null, jamKeluar ?? null, weekDay);
