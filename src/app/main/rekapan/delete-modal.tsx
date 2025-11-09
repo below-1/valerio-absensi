@@ -16,7 +16,7 @@ import {
 import { deleteAbsensiAction } from '@/lib/actions/remove-absensi' 
 import { useRouter } from 'next/navigation'
 
-export function DeleteModal({ id }: { id: number }) {
+export function DeleteModal({ id, children }: { id: number, children?: React.ReactNode }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
@@ -32,7 +32,7 @@ export function DeleteModal({ id }: { id: number }) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">Hapus</Button>
+        {children ? children : <Button variant="ghost" size="sm" className="w-full">Hapus</Button>}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
