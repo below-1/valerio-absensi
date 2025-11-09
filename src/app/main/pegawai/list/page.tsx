@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { pegawai } from "@/lib/db/schema";
 import { PlusCircle } from "lucide-react";
 import PegawaiTable from "./pegawai-table";
+import { AddPegawaiModal } from "./add-pegawai-modal";
 
 export default async function ListPegawaiPage() {
   const pegawaiData = await db.select().from(pegawai).all()
@@ -11,20 +12,16 @@ export default async function ListPegawaiPage() {
     <div>
       <PageHeader
         title="Data Pegawai"
-        description="Lihat dan unduh data pegawai di sini."
+        description="Lihat data pegawai di sini."
         actions={
           <>
-            <Button variant="outline">Export</Button>
-            <Button className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Tambah Data
-            </Button>
+            <AddPegawaiModal />
           </>
         }
       />
 
       <PegawaiTable 
-        data={pegawaiData} 
+        data={pegawaiData as any[]} 
       />
     </div>
   )
