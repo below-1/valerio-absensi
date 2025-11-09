@@ -31,6 +31,7 @@ import { calculateAbsensiKeluarScore, calculateAbsensiMasukScore, calculateStatu
 import { twMerge } from "tailwind-merge";
 import { Badge } from "./ui/badge";
 import { useScoreKeluar, useScoreMasuk, useWeekDay } from "@/lib/hooks";
+import { Plus } from "lucide-react";
 
 const absensiSchema = z.object({
   pegawaiId: z.number().min(1, "Pilih pegawai"),
@@ -56,16 +57,19 @@ const absensiSchema = z.object({
 
 export type AbsensiFormData = z.infer<typeof absensiSchema>;
 
+// In your AddAbsensiModal component, add this prop
 interface AddAbsensiModalProps {
-  pegawaiOptions: { id: number; nama: string }[];
+  pegawaiOptions: {
+    id: number;
+    nama: string;
+  }[];
+  variant?: "default" | "icon" | "full";
 }
 
 const statusMasukOptions = statusMasukEnum
 const statusKeluarOptions = statusKeluarEnum;
 
-export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
-  pegawaiOptions,
-}) => {
+export function AddAbsensiModal({ pegawaiOptions, variant = "default" }: AddAbsensiModalProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -135,7 +139,21 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Tambah Absensi</Button>
+        {variant === "icon" ? (
+          <Button size="icon" variant="outline" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" />
+          </Button>
+        ) : variant === "full" ? (
+          <Button className="w-full" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Absensi
+          </Button>
+        ) : (
+          <Button onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Absensi
+          </Button>
+        )}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-lg">

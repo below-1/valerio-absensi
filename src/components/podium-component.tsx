@@ -49,7 +49,7 @@ export default function Podium({ data, title = "Top Performers" }: PodiumProps) 
           <Badge className="uppercase">Podium</Badge>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 items-end">
+        <div className="grid md:grid-cols-3 gap-4 items-end">
           {/* second place */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -143,7 +143,7 @@ export default function Podium({ data, title = "Top Performers" }: PodiumProps) 
         </div>
 
         {/* details row */}
-        <div className="mt-4 grid grid-cols-3 gap-4">
+        <div className="mt-4 grid md:grid-cols-3 gap-4">
           {/* small summary cards for each of top 3 */}
           {[second, first, third].map((emp, i) => (
             <div key={i} className="p-3 rounded-xl bg-slate-50 shadow-sm">

@@ -8,6 +8,7 @@ import DescendingRekapTable from "../rekapan/descending-rekap-table";
 import { format } from "date-fns";
 import { HeaderFilter } from "./header-filter";
 import { CheckCircle, Clock, LogOut, XCircle } from "lucide-react";
+import RekapanTopTable from "./rekapan-top-table";
 
 type Props = {
   searchParams: Promise<{
@@ -59,13 +60,13 @@ export default async function DashboardPage({
   ];
   return (
     <div>
-      <div className="w-full md:w-1/2">
+      <div className="w-full md:w-1/2 mt-20 md:mt-0">
         <HeaderFilter monthFilter={monthFilter} />
       </div>
       <AttendanceStatsGrid stats={stats} />
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
         <Podium data={results} />
-        <RekapanTablePerMonth data={results.slice(0, 10)} />
+        <RekapanTopTable data={results.slice(0, 10)} />
       </div>
 
       <DescendingRekapTable
