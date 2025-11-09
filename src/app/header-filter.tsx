@@ -50,7 +50,7 @@ export function HeaderFilter({ monthFilter }: RekapanActionsProps) {
             setYear(parseInt((r.target as any).value))
             
             const monthFilter = `${y}-${selectedMonth.padStart(2, "0")}`;
-            router.push(`/main/dashboard?monthFilter=${monthFilter}`)
+            router.push(`/?monthFilter=${monthFilter}`)
           }}
           min={2023}
           max={2050}
@@ -64,7 +64,7 @@ export function HeaderFilter({ monthFilter }: RekapanActionsProps) {
             setSelectedMonth(s)
             const ss = s.padStart(2, "0")
             const monthFilter = `${year}-${ss}`;
-            router.push(`/main/dashboard?monthFilter=${monthFilter}`)
+            router.push(`/?monthFilter=${monthFilter}`)
             setSelectedMonth(s)
           }}
         >
