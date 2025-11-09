@@ -48,6 +48,8 @@ const absensiSchema = z.object({
   statusMasuk: z.enum(statusMasukEnum).optional(),
   statusKeluar: z.enum(statusKeluarEnum).optional(),
 
+  dispensasi: z.boolean().optional(),
+
   suratDispensasi: z.string().optional(),
   pengumpulanSuratDispensasi: z.string().optional(),
 });
@@ -112,6 +114,7 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
       });
       formData.append("statusMasuk", statusMasuk);
       formData.append("statusKeluar", statusKeluar);
+      formData.append("totalScore", String(scoreMasuk + scoreKeluar));
       formData.append("scoreMasuk", String(scoreMasuk));
       formData.append("scoreKeluar", String(scoreKeluar));
 
@@ -257,15 +260,15 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
 
 
 
-
           {/* Surat Dispensasi */}
           <div className="space-y-2">
-            <Label htmlFor="suratDispensasi">Surat Dispensasi</Label>
-            <Textarea
-              id="suratDispensasi"
-              {...register("suratDispensasi")}
-              placeholder="Keterangan surat dispensasi (opsional)"
+            <Checkbox
+              id="dispensasi"
+              name="dispensasi"
+              checked={watch("dispensasi") || false}
+              onCheckedChange={(checked) => setValue("dispensasi", Boolean(checked))}
             />
+            <Label htmlFor="suratDispensasi">Butuh Surat Dispensasi</Label>
           </div>
 
           {/* Pengumpulan Surat Dispensasi */}
