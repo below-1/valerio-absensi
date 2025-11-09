@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,17 +27,24 @@ import { addAbsensi } from "@/lib/actions/add-absensi";
 import { StatusKeluar, statusKeluarEnum, StatusMasuk, statusMasukEnum } from "@/lib/db/schema";
 import { toast } from "sonner";
 import { Checkbox } from "./ui/checkbox";
+import { calculateAbsensiKeluarScore, calculateAbsensiMasukScore, calculateStatusKeluar, calculateStatusMasuk, getWeekday, PresensiStatusEnum, presensiStatusOptions, PresensiType, timeStringToMinutes } from "@/lib/utils";
+import { twMerge } from "tailwind-merge";
+import { Badge } from "./ui/badge";
+import { useScoreKeluar, useScoreMasuk, useWeekDay } from "@/lib/hooks";
 
 const absensiSchema = z.object({
   pegawaiId: z.number().min(1, "Pilih pegawai"),
   tanggal: z.string().min(1, "Tanggal wajib diisi"),
+
+  presensiMasuk: PresensiStatusEnum,
+  presensiKeluar: PresensiStatusEnum,
 
   stMasuk: z.boolean().optional(),
   stKeluar: z.boolean().optional(),
 
   jamMasuk: z.string().optional(),
   jamKeluar: z.string().optional(),
-  
+
   statusMasuk: z.enum(statusMasukEnum).optional(),
   statusKeluar: z.enum(statusKeluarEnum).optional(),
 
@@ -69,32 +76,33 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
     formState: { errors },
   } = useForm<AbsensiFormData>({
     resolver: zodResolver(absensiSchema),
-    defaultValues: { 
-      pegawaiId: 0, 
-      tanggal: "", 
+    defaultValues: {
+      pegawaiId: 0,
+      tanggal: "",
       statusMasuk: "tepat_waktu",
       stMasuk: false,
       stKeluar: false,
     },
   });
 
-  const [stMasuk, stKeluar] = watch(["stMasuk", "stKeluar"]);
+  const [
+    presensiMasuk,
+    presensiKeluar,
+    jamMasuk,
+    jamKeluar,
+    tanggal
+  ] = watch(["presensiMasuk", "presensiKeluar", 'jamMasuk', 'jamKeluar', "tanggal"]);
+
+  const weekDay = useWeekDay(tanggal);
+  const scoreMasuk = useScoreMasuk(presensiMasuk, jamMasuk ?? null);
+  const scoreKeluar = useScoreKeluar(presensiMasuk, presensiKeluar, jamMasuk ?? null, jamKeluar ?? null, weekDay);
+  const statusMasuk = useMemo(() => calculateStatusMasuk(presensiMasuk, scoreMasuk), [ presensiMasuk, scoreMasuk ]);
+  const statusKeluar = useMemo(() => calculateStatusKeluar(presensiKeluar, scoreKeluar), [ presensiKeluar, scoreKeluar ]);
 
   useEffect(() => {
-    if (stMasuk) {
-      setValue("jamMasuk", undefined);
-      setValue("statusMasuk", "tepat_waktu");
-    } else {
-      setValue("statusMasuk", undefined);
-    }
-
-    if (stKeluar) {
-      setValue("jamKeluar", undefined);
-      setValue("statusKeluar", "tepat_waktu");
-    } else {
-      setValue("statusKeluar", undefined);
-    }
-  }, [stMasuk, stKeluar, setValue]);
+    console.log("Score Masuk:", scoreMasuk);
+    console.log("Score Keluar:", scoreKeluar);
+  }, [scoreMasuk, scoreKeluar]);
 
   const onSubmit = (data: AbsensiFormData) => {
     startTransition(async () => {
@@ -102,6 +110,10 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
       Object.entries(data).forEach(([k, v]) => {
         if (v !== undefined && v !== null) formData.append(k, String(v));
       });
+      formData.append("statusMasuk", statusMasuk);
+      formData.append("statusKeluar", statusKeluar);
+      formData.append("scoreMasuk", String(scoreMasuk));
+      formData.append("scoreKeluar", String(scoreKeluar));
 
       const result = await addAbsensi(formData);
       if (result) {
@@ -158,85 +170,45 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
             )}
           </div>
 
-          {/* ST Masuk dan keluar */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="stMasuk" 
-                checked={stMasuk} 
-                onCheckedChange={e => {
-                  setValue("stMasuk", Boolean(e))
-                }}
-              />
-              <Label htmlFor="stMasuk">Surat Tugas Masuk</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="stKeluar"
-                checked={stKeluar} 
-                onCheckedChange={e => {
-                  setValue("stKeluar", Boolean(e))
-                }}
-              />
-              <Label htmlFor="stKeluar">Surat Tugas Keluar</Label>
-            </div>
-          </div>
-
-          {/* Jam Masuk & Keluar */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="jamMasuk">Jam Masuk</Label>
-              <Input 
-                id="jamMasuk" 
-                type="time" 
-                {...register("jamMasuk")} 
-                disabled={stMasuk}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="jamKeluar">Jam Keluar</Label>
-              <Input 
-                id="jamKeluar" 
-                type="time" 
-                {...register("jamKeluar")} 
-                disabled={stKeluar}
-              />
-            </div>
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             {/* Status Masuk */}
             <div className="space-y-2">
-              <Label>Status Masuk</Label>
-              <Select value={watch("statusMasuk")} onValueChange={(v) => setValue("statusMasuk", v as StatusMasuk)}>
+              <Label>Presensi Masuk</Label>
+              <Select
+                value={watch("presensiMasuk")}
+                onValueChange={(v) => setValue("presensiMasuk", v as PresensiType)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Pilih status masuk" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusMasukOptions.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                  {presensiStatusOptions.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.statusMasuk && (
+              {errors.presensiMasuk && (
                 <p className="text-red-500 text-sm">
-                  {errors.statusMasuk.message}
+                  {errors.presensiMasuk.message}
                 </p>
               )}
             </div>
             {/* Status Keluar */}
             <div className="space-y-2">
-              <Label>Status Keluar</Label>
-              <Select value={watch("statusKeluar")} onValueChange={(v) => setValue("statusKeluar", v as StatusKeluar)}>
+              <Label>Presensi Keluar</Label>
+              <Select
+                value={watch("presensiKeluar")}
+                onValueChange={(v) => setValue("presensiKeluar", v as PresensiType)}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih status keluar (opsional)" />
+                  <SelectValue placeholder="Pilih presensi keluar" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusKeluarOptions.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
+                  {presensiStatusOptions.map((s) => (
+                    <SelectItem key={s.value} value={s.value}>
+                      {s.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -244,7 +216,46 @@ export const AddAbsensiModal: React.FC<AddAbsensiModalProps> = ({
             </div>
           </div>
 
-          
+          {/* Jam Masuk & Keluar */}
+          <div className="grid grid-cols-2 gap-4">
+            <div
+              className={twMerge(
+                "space-y-2",
+                presensiMasuk == "masuk" ? "visible" : "invisible"
+              )}
+            >
+              <Label htmlFor="jamMasuk">Jam Masuk</Label>
+              <Input
+                id="jamMasuk"
+                type="time"
+                {...register("jamMasuk")}
+              />
+            </div>
+            <div
+              className={twMerge(
+                "space-y-2",
+                presensiKeluar == "masuk" ? "visible" : "invisible"
+              )}
+            >
+              <Label htmlFor="jamKeluar">Jam Keluar</Label>
+              <Input
+                id="jamKeluar"
+                type="time"
+                {...register("jamKeluar")}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 my-5">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-base">Score {scoreMasuk}</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-base">Score {scoreKeluar}</Badge>
+            </div>
+          </div>
+
+
 
 
           {/* Surat Dispensasi */}

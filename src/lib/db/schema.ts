@@ -3,8 +3,8 @@ import { relations, sql } from "drizzle-orm";
 import { id } from "date-fns/locale";
 
 // Enum values (for clarity and reuse)
-export const statusMasukEnum = ['tepat_waktu', 'telat', 'alfa'] as const;
-export const statusKeluarEnum = ['tepat_waktu', 'terlalu_cepat'] as const;
+export const statusMasukEnum = ['tepat_waktu', 'telat', 'alfa', 'surat_tugas'] as const;
+export const statusKeluarEnum = ['tepat_waktu', 'terlalu_cepat', 'surat_tugas'] as const;
 
 export type StatusMasuk = typeof statusMasukEnum[number];
 export type StatusKeluar = typeof statusKeluarEnum[number];
@@ -45,6 +45,11 @@ export const absensi = sqliteTable("absensi", {
   statusMasuk: text("status_masuk", { enum: statusMasukEnum }),
   statusKeluar: text("status_keluar", { enum: statusKeluarEnum }),
 
+  scoreMasuk: integer("score_masuk").notNull().default(0),
+  scoreKeluar: integer("score_keluar").notNull().default(0),
+  totalScore: integer("total_score").notNull().default(0),
+
+  dispensasi: integer("dispensasi", { mode: 'boolean' }).default(false),
   suratDispensasi: text("surat_dispensasi"),
   pengumpulanSuratDispensasi: text("pengumpulan_surat_dispensasi"),
 });

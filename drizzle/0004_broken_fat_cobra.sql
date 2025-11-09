@@ -1,0 +1,1 @@
+ALTER TABLE `absensi` ADD `dispensasi` integer DEFAULT false;
