@@ -122,6 +122,10 @@ export async function fetchRekapanAbsenByMonth(monthFilter: string) {
           ${absensi.scoreKeluar}
         ), 2)
       `.as("rata_rata_out"),
+
+      totalScore: sql<number>`
+        (SUM(${absensi.scoreMasuk}) + SUM(${absensi.scoreKeluar})) as total_score
+      `
     })
     .from(pegawai)
     .leftJoin(
@@ -129,7 +133,9 @@ export async function fetchRekapanAbsenByMonth(monthFilter: string) {
       sql`${absensi.pegawaiId} = ${pegawai.id} AND strftime('%Y-%m', ${absensi.tanggal}) = ${monthFilter}`
     )
     .groupBy(pegawai.id, pegawai.nip, pegawai.nama)
-    .orderBy(pegawai.nama);
+    .orderBy(
+      sql`(SUM(${absensi.scoreMasuk}) + SUM(${absensi.scoreKeluar})) DESC`,
+    );
   const mapped = results.map(r => {
     return {
       ...r,
